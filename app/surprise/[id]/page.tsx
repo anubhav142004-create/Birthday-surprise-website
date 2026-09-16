@@ -75,8 +75,21 @@ const startSelectedSong = async () => {
         return;
       }
 
-      setSurprise(data);
-      setLoading(false);
+     const normalizedPhotos = Array.isArray(data.photos)
+  ? data.photos.filter(
+      (photo: unknown): photo is string =>
+        typeof photo === "string" &&
+        photo.trim().length > 0 &&
+        !photo.startsWith("blob:")
+    )
+  : [];
+
+setSurprise({
+  ...data,
+  photos: normalizedPhotos,
+});
+
+setLoading(false);
     };
 
     if (id) {

@@ -80,6 +80,7 @@ const [playingSong, setPlayingSong] = useState("");
  const [showTreeScene, setShowTreeScene] = useState(false);
  const [createdSurpriseId, setCreatedSurpriseId] = useState<string | null>(null);
 const [showShareScreen, setShowShareScreen] = useState(false);
+const [isSavingSurprise, setIsSavingSurprise] = useState(false);
 
   const startSelectedSong = async () => {
     const src =
@@ -113,17 +114,12 @@ useEffect(() => {
 
   setCraftingStep(0);
   setShowSurprise(false);
+  setShowShareScreen(false);
 
   const timer = setInterval(() => {
     setCraftingStep((current) => {
       if (current >= 5) {
         clearInterval(timer);
-
-        setTimeout(() => {
-         setShowCakeBuild(false);
-         setShowShareScreen(true);
-        }, 1000);
-
         return 5;
       }
 
@@ -133,6 +129,21 @@ useEffect(() => {
 
   return () => clearInterval(timer);
 }, [showCakeBuild]);
+
+// After processing reaches the final step,
+// wait for Supabase upload/save to finish.
+useEffect(() => {
+  if (!showCakeBuild) return;
+  if (craftingStep < 5) return;
+  if (isSavingSurprise) return;
+
+  const timer = setTimeout(() => {
+    setShowCakeBuild(false);
+    setShowShareScreen(true);
+  }, 1000);
+
+  return () => clearTimeout(timer);
+}, [showCakeBuild, craftingStep, isSavingSurprise]);
 
 useEffect(() => {
   return () => {
@@ -1087,18 +1098,23 @@ return (
     </div>
 
 
-    <button
+   <button
   type="button"
+  disabled={isSavingSurprise}
   onClick={async () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-      setPlayingSong("");
+    // Stop audio before creating the surprise
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setPlayingSong("");
 
-      try {
-        const uploadedPhotoUrls: string[] = [];
+    // Show Processing immediately
+    setIsSavingSurprise(true);
+    setShowCakeBuild(true);
 
-        // Upload memory photos to Supabase Storage
-        for (const file of memoryPhotoFiles) {
+    try {
+      // Upload all photos at the same time
+      const uploadedPhotoUrls = await Promise.all(
+        memoryPhotoFiles.map(async (file) => {
           const extension = file.name.includes(".")
             ? file.name.split(".").pop()
             : "jpg";
@@ -1114,52 +1130,62 @@ return (
 
           if (uploadError) {
             console.error("Photo upload error:", uploadError);
-            alert("Photo upload failed. Please try again ❤️");
-            return;
+            throw uploadError;
           }
 
           const { data: publicUrlData } = supabase.storage
             .from("memories")
             .getPublicUrl(fileName);
 
-          uploadedPhotoUrls.push(publicUrlData.publicUrl);
-        }
+          return publicUrlData.publicUrl;
+        })
+      );
 
-        // Save surprise data with permanent photo URLs
-        const { data, error } = await supabase
-          .from("surprises")
-          .insert({
-            name: name.trim(),
-            age: age ? Number(age) : null,
-            birthday: birthday || null,
-            sender_name: senderName.trim(),
-            love_message: loveMessage.trim(),
-            selected_song: selectedSong,
-            selected_cake: selectedCake,
-            photos: uploadedPhotoUrls,
-          })
-          .select("id")
-          .single();
+      // Save surprise information in Supabase
+      const { data, error } = await supabase
+        .from("surprises")
+        .insert({
+          name: name.trim(),
+          age: age ? Number(age) : null,
+          birthday: birthday || null,
+          sender_name: senderName.trim(),
+          love_message: loveMessage.trim(),
+          selected_song: selectedSong,
+          selected_cake: selectedCake,
+          photos: uploadedPhotoUrls,
+        })
+        .select("id")
+        .single();
 
-        if (error) {
-          console.error("Supabase save error:", error);
-          alert(
-            "Something went wrong while creating your surprise. Please try again ❤️"
-          );
-          return;
-        }
+      if (error) {
+        console.error("Supabase save error:", error);
+        throw error;
+      }
 
       console.log("Surprise created with ID:", data.id);
-             setCreatedSurpriseId(data.id.toString());
-         setShowCakeBuild(true);
-      } catch (error) {
-        console.error("Create surprise error:", error);
-        alert("Something went wrong. Please try again ❤️");
-      }
-    }}
- className="mx-auto mt-6 block w-2/3 rounded-2xl bg-gradient-to-r from-[#ff6f70] to-[#ff9b58] px-4 py-4 text-center font-bold text-white shadow-lg transition hover:scale-[1.01]"
- >
-  Create Surprise ✨
+
+      // Save the unique surprise ID
+      setCreatedSurpriseId(data.id.toString());
+
+      // Use permanent Supabase URLs for the creator preview too
+      setMemoryPhotos(uploadedPhotoUrls);
+
+      // Saving is complete
+      setIsSavingSurprise(false);
+    } catch (error) {
+      console.error("Create surprise error:", error);
+
+      setIsSavingSurprise(false);
+      setShowCakeBuild(false);
+
+      alert(
+        "Something went wrong while creating your surprise. Please try again ❤️"
+      );
+    }
+  }}
+  className="mx-auto mt-6 block w-2/3 rounded-2xl bg-gradient-to-r from-[#ff6f70] to-[#ff9b58] px-4 py-4 text-center font-bold text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
+>
+  {isSavingSurprise ? "Creating your surprise..." : "Create Surprise ✨"}
 </button>
         {/* Copyright Footer */}
         <footer className="mt-8 border-t border-[#ead9da] pt-5 text-center">
