@@ -1,0 +1,681 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fff8f5;
+  --foreground: #3c2929;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #fff8f5;
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ================================
+   ANIMATED BACKGROUND HEARTS
+================================ */
+
+.bg-heart {
+  position: absolute;
+  color: rgba(244, 105, 145, 0.28);
+  font-size: 18px;
+  animation: floatHeart 7s ease-in-out infinite;
+  filter: blur(0.2px);
+}
+
+.heart-1 {
+  left: 8%;
+  top: 18%;
+  animation-delay: 0s;
+  font-size: 17px;
+}
+
+.heart-2 {
+  right: 10%;
+  top: 30%;
+  animation-delay: 1.5s;
+  font-size: 13px;
+}
+
+.heart-3 {
+  left: 15%;
+  bottom: 22%;
+  animation-delay: 3s;
+  font-size: 12px;
+}
+
+.heart-4 {
+  right: 16%;
+  bottom: 18%;
+  animation-delay: 4.5s;
+  font-size: 19px;
+}
+
+.heart-5 {
+  left: 48%;
+  top: 10%;
+  animation-delay: 2.5s;
+  font-size: 10px;
+}
+
+/* ================================
+   SPARKLES
+================================ */
+
+.bg-sparkle {
+  position: absolute;
+  color: rgba(255, 180, 70, 0.65);
+  font-size: 20px;
+  animation: sparkleMove 4s ease-in-out infinite;
+}
+
+.sparkle-1 {
+  left: 20%;
+  top: 27%;
+  animation-delay: 0s;
+}
+
+.sparkle-2 {
+  right: 18%;
+  top: 16%;
+  animation-delay: 1s;
+}
+
+.sparkle-3 {
+  left: 12%;
+  bottom: 30%;
+  animation-delay: 2s;
+}
+
+.sparkle-4 {
+  right: 12%;
+  bottom: 28%;
+  animation-delay: 3s;
+}
+
+/* ================================
+   SOFT MOVEMENT
+================================ */
+
+@keyframes floatHeart {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.25;
+  }
+
+  50% {
+    transform: translateY(-22px) scale(1.15);
+    opacity: 0.65;
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.25;
+  }
+}
+
+@keyframes sparkleMove {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(0.8);
+    opacity: 0.2;
+  }
+
+  50% {
+    transform: translateY(-15px) rotate(90deg) scale(1.2);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(0) rotate(180deg) scale(0.8);
+    opacity: 0.2;
+  }
+}
+/* =================================
+   MAIN HEART ANIMATION
+================================= */
+
+.main-heart-wrap {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-heart {
+  position: relative;
+  z-index: 5;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    145deg,
+    #ff9abb 0%,
+    #ff6f91 48%,
+    #f44770 100%
+  );
+
+  box-shadow:
+    0 15px 40px rgba(244, 71, 112, 0.28),
+    0 0 45px rgba(255, 126, 161, 0.25);
+
+  animation: mainHeartFloat 3.5s ease-in-out infinite;
+}
+
+.main-heart span {
+  color: white;
+  font-size: 58px;
+  line-height: 1;
+
+  text-shadow:
+    0 3px 10px rgba(160, 40, 70, 0.2);
+
+  animation: heartBeat 1.8s ease-in-out infinite;
+}
+
+/* glowing rings */
+
+.heart-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 116, 151, 0.28);
+}
+
+.ring-one {
+  width: 130px;
+  height: 130px;
+  animation: heartRing 3s ease-out infinite;
+}
+
+.ring-two {
+  width: 150px;
+  height: 150px;
+  animation: heartRing 3s ease-out 1.2s infinite;
+}
+
+/* little floating decorations */
+
+.heart-mini {
+  position: absolute;
+  z-index: 7;
+  color: #f47798;
+  font-size: 13px;
+  animation: miniHeartFloat 3s ease-in-out infinite;
+}
+
+.mini-1 {
+  top: 8px;
+  left: 15px;
+  animation-delay: 0s;
+}
+
+.mini-2 {
+  right: 10px;
+  bottom: 22px;
+  animation-delay: 1s;
+}
+
+.mini-3 {
+  top: 25px;
+  right: 8px;
+  color: #ffbd62;
+  animation-delay: 1.8s;
+}
+
+/* main floating motion */
+
+@keyframes mainHeartFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+/* soft heartbeat */
+
+@keyframes heartBeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  12% {
+    transform: scale(1.12);
+  }
+
+  22% {
+    transform: scale(1);
+  }
+
+  32% {
+    transform: scale(1.08);
+  }
+
+  45% {
+    transform: scale(1);
+  }
+}
+
+/* expanding glow */
+
+@keyframes heartRing {
+  0% {
+    transform: scale(0.82);
+    opacity: 0.75;
+  }
+
+  70% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+@keyframes miniHeartFloat {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.45;
+  }
+
+  50% {
+    transform: translateY(-10px) scale(1.2);
+    opacity: 1;
+  }
+}/* MAIN HEART */
+
+.main-heart-wrap {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-heart {
+  position: relative;
+  z-index: 5;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #ff9abb, #ff6f91, #f44770);
+  box-shadow:
+    0 15px 40px rgba(244, 71, 112, 0.28),
+    0 0 45px rgba(255, 126, 161, 0.25);
+  animation: mainHeartFloat 3.5s ease-in-out infinite;
+}
+
+.main-heart span {
+  color: white;
+  font-size: 58px;
+  line-height: 1;
+  text-shadow: 0 3px 10px rgba(160, 40, 70, 0.2);
+  animation: heartBeat 1.8s ease-in-out infinite;
+}
+
+.heart-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 116, 151, 0.28);
+}
+
+.ring-one {
+  width: 130px;
+  height: 130px;
+  animation: heartRing 3s ease-out infinite;
+}
+
+.ring-two {
+  width: 150px;
+  height: 150px;
+  animation: heartRing 3s ease-out 1.2s infinite;
+}
+
+.heart-mini {
+  position: absolute;
+  z-index: 7;
+  color: #f47798;
+  font-size: 13px;
+  animation: miniHeartFloat 3s ease-in-out infinite;
+}
+
+.mini-1 {
+  top: 8px;
+  left: 15px;
+}
+
+.mini-2 {
+  right: 10px;
+  bottom: 22px;
+  animation-delay: 1s;
+}
+
+.mini-3 {
+  top: 25px;
+  right: 8px;
+  color: #ffbd62;
+  animation-delay: 1.8s;
+}
+
+@keyframes mainHeartFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  12% {
+    transform: scale(1.12);
+  }
+  22% {
+    transform: scale(1);
+  }
+  32% {
+    transform: scale(1.08);
+  }
+  45% {
+    transform: scale(1);
+  }
+}
+
+@keyframes heartRing {
+  0% {
+    transform: scale(0.82);
+    opacity: 0.75;
+  }
+  70%, 100% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+@keyframes miniHeartFloat {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translateY(-10px) scale(1.2);
+    opacity: 1;
+  }
+}
+/* Cake Building Animation */
+
+.cake-base {
+  opacity: 0;
+  transform: translate(-50%, 80px) scale(0.7);
+  animation: cakeBaseDrop 0.7s ease-out 0.3s forwards;
+}
+
+.cake-middle {
+  opacity: 0;
+  transform: translate(-50%, 80px) scale(0.7);
+  animation: cakeMiddleDrop 0.7s ease-out 1.8s forwards;
+}
+
+.cake-top {
+  opacity: 0;
+  transform: translate(-50%, 80px) scale(0.7);
+  animation: cakeTopDrop 0.7s ease-out 3.3s forwards;
+}
+
+.cake-cream {
+  opacity: 0;
+  transform: translate(-50%, 30px) scaleX(0.5);
+  animation: creamSpread 0.6s ease-out forwards;
+}
+
+.cake-cream:nth-of-type(1) {
+  animation-delay: 1.1s;
+}
+
+.cake-cream:nth-of-type(2) {
+  animation-delay: 2.6s;
+}
+
+.candle-stick {
+  opacity: 0;
+  transform: translate(-50%, -20px);
+  animation: candlePlace 0.6s ease-out 4.1s forwards;
+}
+
+.candle-flame {
+  opacity: 0;
+  transform: translate(-50%, 8px) scale(0.2);
+  animation: flameLight 0.8s ease-out 4.7s forwards,
+             flameFlicker 1s ease-in-out 5.5s infinite alternate;
+}
+
+@keyframes cakeBaseDrop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 80px) scale(0.7);
+  }
+
+  70% {
+    transform: translate(-50%, -8px) scale(1.03);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes cakeMiddleDrop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 80px) scale(0.7);
+  }
+
+  70% {
+    transform: translate(-50%, -7px) scale(1.03);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes cakeTopDrop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 80px) scale(0.7);
+  }
+
+  70% {
+    transform: translate(-50%, -6px) scale(1.03);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes creamSpread {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 30px) scaleX(0.5);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scaleX(1);
+  }
+}
+
+@keyframes candlePlace {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30px);
+  }
+
+  70% {
+    transform: translate(-50%, 4px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes flameLight {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 8px) scale(0.2);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -2px) scale(1.15);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes flameFlicker {
+  0% {
+    transform: translate(-50%, 0) scale(1) rotate(-3deg);
+  }
+
+  100% {
+    transform: translate(-50%, -2px) scale(1.08) rotate(3deg);
+  }
+}
+/* =================================
+   REALISTIC CAKE BUILD
+================================= */
+
+.cake-layer {
+  box-shadow:
+    0 10px 18px rgba(80, 40, 40, 0.16),
+    inset 0 -6px 0 rgba(0, 0, 0, 0.08);
+}
+
+.cake-base,
+.cake-middle,
+.cake-top {
+  overflow: hidden;
+}
+
+/* Soft cake texture */
+.cake-base::after,
+.cake-middle::after,
+.cake-top::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 35%, rgba(255,255,255,.18) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 55%, rgba(255,255,255,.12) 0 2px, transparent 3px);
+  opacity: .7;
+}
+
+/* Cream should look soft */
+.cake-cream {
+  height: 13px !important;
+  border-radius: 999px;
+  box-shadow:
+    0 4px 8px rgba(120, 70, 70, 0.10),
+    inset 0 -2px 3px rgba(220, 180, 180, 0.18);
+}
+
+/* Candle */
+.candle-stick {
+  width: 7px !important;
+  border-radius: 999px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      #fff7f0 0px,
+      #fff7f0 4px,
+      #f3b9c9 5px,
+      #f3b9c9 8px
+    ) !important;
+  box-shadow:
+    0 2px 5px rgba(80, 40, 40, 0.18);
+}
+
+/* Flame */
+.candle-flame {
+  width: 15px !important;
+  height: 25px !important;
+  border-radius: 60% 60% 55% 55%;
+  background:
+    radial-gradient(
+      ellipse at 50% 75%,
+      #fff 0%,
+      #fff8a8 25%,
+      #ffd43b 48%,
+      #ff8c22 72%,
+      #ff5c35 100%
+    ) !important;
+
+  filter: blur(.15px);
+
+  box-shadow:
+    0 0 8px 3px rgba(255, 183, 54, .75),
+    0 0 22px 8px rgba(255, 153, 50, .38),
+    0 0 38px 12px rgba(255, 197, 72, .18);
+}
+
+/* Real flame movement */
+@keyframes flameFlicker {
+  0% {
+    transform: translate(-50%, 0) rotate(-4deg) scale(1);
+  }
+
+  25% {
+    transform: translate(-50%, -1px) rotate(3deg) scale(1.05);
+  }
+
+  50% {
+    transform: translate(-50%, 1px) rotate(-2deg) scale(.96);
+  }
+
+  75% {
+    transform: translate(-50%, -2px) rotate(4deg) scale(1.08);
+  }
+
+  100% {
+    transform: translate(-50%, 0) rotate(-3deg) scale(1);
+  }
+}
