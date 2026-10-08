@@ -865,7 +865,7 @@ export default function BirthdayTreeScene({
               marginBottom: "12px",
             }}
           >
-            it's officially your day
+            it&apos;s officially your day
           </div>
 
           {/* HAPPY */}
@@ -950,7 +950,7 @@ export default function BirthdayTreeScene({
               color: "#70404d",
             }}
           >
-            and just like that, you're turning{" "}
+            and just like that, you&apos;re turning{" "}
             <span
               style={{
                 color: "#c82e68",

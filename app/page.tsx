@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { gsap } from "gsap";
 import ArcheryScene from "@/components/ArcheryScene";
 import BirthdayTreeScene from "../components/BirthdayTreeScene";
 import MemoryLaneScene from "@/components/MemoryLaneScene";
@@ -15,6 +14,7 @@ const musicFiles: Record<string, string> = {
   "Until I Found You — Stephen Sanchez": "/music/until-i-found-you.mp3",
   "A Thousand Years — Christina Perri": "/music/a-thousand-years.mp3",
   "Tum Se Hi — Mohit Chauhan": "/music/tum-se-hi.mp3",
+  "Happy Birthday — Traditional": "/music/happy-birthday.mp3",
 };
 
 const musicOptions = {
@@ -25,16 +25,11 @@ const musicOptions = {
     "Tum Se Hi — Mohit Chauhan",
   ],
   Happy: [
-    "Love You Zindagi",
-    "Gallan Goodiyaan",
-    "Ilahi",
-    "What Makes You Beautiful",
+    "Happy Birthday — Traditional",
   ],
   Emotional: [
-    "Photograph — Ed Sheeran",
-    "Someone You Loved — Lewis Capaldi",
-    "Agar Tum Saath Ho",
-    "Tujh Mein Rab Dikhta Hai",
+    "A Thousand Years — Christina Perri",
+    "Until I Found You — Stephen Sanchez",
   ],
 };
 
@@ -64,6 +59,7 @@ export default function Home() {
     useState<File | null>(null);
 
   const [audioUrl, setAudioUrl] = useState("");
+  const objectUrlsRef = useRef(new Set<string>());
 
 const audioRef = useRef<HTMLAudioElement | null>(null);
 const customPreviewAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -81,13 +77,35 @@ const [playingSong, setPlayingSong] = useState("");
  const [createdSurpriseId, setCreatedSurpriseId] = useState<string | null>(null);
 const [showShareScreen, setShowShareScreen] = useState(false);
 const [isSavingSurprise, setIsSavingSurprise] = useState(false);
+const [createWarning, setCreateWarning] = useState("");
+
+  const revokeObjectUrl = (url: string) => {
+    URL.revokeObjectURL(url);
+    objectUrlsRef.current.delete(url);
+  };
+
+  const clearCustomSong = () => {
+    if (audioUrl) revokeObjectUrl(audioUrl);
+    setSelectedSongFile(null);
+    setAudioUrl("");
+  };
+
+  const stopSongPreview = () => {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    customPreviewAudioRef.current?.pause();
+    if (customPreviewAudioRef.current) {
+      customPreviewAudioRef.current.currentTime = 0;
+    }
+    setPlayingSong("");
+  };
 
   const startSelectedSong = async () => {
     const src =
       selectedSongFile && audioUrl
         ? audioUrl
         : selectedSong
-          ? musicFiles[selectedSong]
+          ? musicFiles[selectedSong] || (/^https?:\/\//i.test(selectedSong) ? selectedSong : "")
           : "";
 
     if (!src) return;
@@ -111,10 +129,6 @@ const [isSavingSurprise, setIsSavingSurprise] = useState(false);
 
 useEffect(() => {
   if (!showCakeBuild) return;
-
-  setCraftingStep(0);
-  setShowSurprise(false);
-  setShowShareScreen(false);
 
   const timer = setInterval(() => {
     setCraftingStep((current) => {
@@ -146,26 +160,14 @@ useEffect(() => {
 }, [showCakeBuild, craftingStep, isSavingSurprise]);
 
 useEffect(() => {
+  const objectUrls = objectUrlsRef.current;
   return () => {
     audioRef.current?.pause();
     audioRef.current = null;
+    objectUrls.forEach((url) => URL.revokeObjectURL(url));
+    objectUrls.clear();
   };
 }, []);
-
-// Song selection is only a preview on Step 2.
-// Stop all preview audio as soon as the user leaves Step 2.
-// The song will be started again from the Archery Scene.
-useEffect(() => {
-  if (step !== 2) {
-    audioRef.current?.pause();
-    audioRef.current = null;
-    customPreviewAudioRef.current?.pause();
-    if (customPreviewAudioRef.current) {
-      customPreviewAudioRef.current.currentTime = 0;
-    }
-    setPlayingSong("");
-  }
-}, [step]);
 
 return (
     <main className="relative min-h-screen overflow-hidden bg-[#fff8f5] px-4 py-8 text-[#3c2929]">
@@ -409,8 +411,7 @@ return (
                   onClick={() => {
                     setSelectedMusic("Romantic");
                     setSelectedSong("");
-                    setSelectedSongFile(null);
-                    setAudioUrl("");
+                    clearCustomSong();
                   }}
                   className={`rounded-2xl border p-3 text-center transition-all ${
                     selectedMusic === "Romantic"
@@ -431,8 +432,7 @@ return (
                   onClick={() => {
                     setSelectedMusic("Happy");
                     setSelectedSong("");
-                    setSelectedSongFile(null);
-                    setAudioUrl("");
+                    clearCustomSong();
                   }}
                   className={`rounded-2xl border p-3 text-center transition-all ${
                     selectedMusic === "Happy"
@@ -453,8 +453,7 @@ return (
                   onClick={() => {
                     setSelectedMusic("Emotional");
                     setSelectedSong("");
-                    setSelectedSongFile(null);
-                    setAudioUrl("");
+                    clearCustomSong();
                   }}
                   className={`rounded-2xl border p-3 text-center transition-all ${
                     selectedMusic === "Emotional"
@@ -488,8 +487,7 @@ return (
                         type="button"
                         onClick={() => {
   // Step 2 only selects the song. Playback starts later in Archery.
-  audioRef.current?.pause();
-  audioRef.current = null;
+  stopSongPreview();
   setPlayingSong("");
   setSelectedSong(song);
 }}
@@ -570,7 +568,9 @@ return (
                         const file = e.target.files?.[0];
 
                         if (file) {
+                          if (audioUrl) revokeObjectUrl(audioUrl);
                           const url = URL.createObjectURL(file);
+                          objectUrlsRef.current.add(url);
 
                           setSelectedSongFile(file);
                           setAudioUrl(url);
@@ -608,9 +608,10 @@ return (
                 <button
                   type="button"
                   onClick={() => {
+                    stopSongPreview();
                     setStep(1);
                   }}
-                  className="w-1/3 rounded-2xl border border-pink-200 bg-white px-4 py-4 font-bold text-[#9b6f77] transition hover:bg-pink-50"
+                  className="h-16 w-[38%] flex-none self-center rounded-full bg-gradient-to-r from-[#ff6f70] to-[#ff984f] px-3 text-base font-semibold text-white shadow-lg transition-all duration-300 hover:scale-[1.03] active:scale-95"
                 >
                   ← Back
                 </button>
@@ -618,9 +619,12 @@ return (
                 <button
                   type="button"
                   disabled={!selectedSong}
-                  onClick={() => setStep(3)}
+                  onClick={() => {
+                    stopSongPreview();
+                    setStep(3);
+                  }}
                  
-                 className="w-2/3rounded-2xl bg-gradient-to-r from-[#ff6f70] to-[#ff9b58] px-4 py-4 font-bold text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-40"
+                 className="w-2/3 rounded-full bg-gradient-to-r from-[#ff6f70] to-[#ff9b58] px-4 py-4 font-bold text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-40"
                   
                 >
                   Continue to memories ✨
@@ -687,9 +691,11 @@ return (
 
   const newFiles = files.slice(0, remainingSlots);
 
-  const newUrls = newFiles.map((file) =>
-    URL.createObjectURL(file)
-  );
+  const newUrls = newFiles.map((file) => {
+    const url = URL.createObjectURL(file);
+    objectUrlsRef.current.add(url);
+    return url;
+  });
 
   setMemoryPhotoFiles((current) => [
     ...current,
@@ -738,7 +744,7 @@ return (
               <button
                 type="button"
                 onClick={() => {
-                  URL.revokeObjectURL(photo);
+                  revokeObjectUrl(photo);
 
                   setMemoryPhotos((current) =>
                     current.filter((_, i) => i !== index)
@@ -1110,6 +1116,12 @@ return (
     // Show Processing immediately
     setIsSavingSurprise(true);
     setShowCakeBuild(true);
+    setCraftingStep(0);
+    setShowSurprise(false);
+    setShowShareScreen(false);
+    setCreateWarning("");
+
+    const uploadedStoragePaths: string[] = [];
 
     try {
       // Upload all photos at the same time
@@ -1133,6 +1145,8 @@ return (
             throw uploadError;
           }
 
+          uploadedStoragePaths.push(fileName);
+
           const { data: publicUrlData } = supabase.storage
             .from("memories")
             .getPublicUrl(fileName);
@@ -1140,6 +1154,29 @@ return (
           return publicUrlData.publicUrl;
         })
       );
+
+      let savedSong = selectedSong;
+      if (selectedSongFile) {
+        const extension = selectedSongFile.name.split(".").pop()?.replace(/[^a-zA-Z0-9]/g, "") || "mp3";
+        const filePath = `audio/song-${crypto.randomUUID()}.${extension}`;
+        try {
+          const { error: uploadError } = await supabase.storage
+            .from("memories")
+            .upload(filePath, selectedSongFile, {
+              contentType: selectedSongFile.type || "audio/mpeg",
+              upsert: false,
+            });
+
+          if (uploadError) throw uploadError;
+
+          uploadedStoragePaths.push(filePath);
+          savedSong = supabase.storage.from("memories").getPublicUrl(filePath).data.publicUrl;
+        } catch (songUploadError) {
+          console.error("Song upload error:", songUploadError);
+          savedSong = "";
+          setCreateWarning("The custom song could not be shared, but your surprise is ready without it.");
+        }
+      }
 
       // Save surprise information in Supabase
       const { data, error } = await supabase
@@ -1150,7 +1187,7 @@ return (
           birthday: birthday || null,
           sender_name: senderName.trim(),
           love_message: loveMessage.trim(),
-          selected_song: selectedSong,
+          selected_song: savedSong,
           selected_cake: selectedCake,
           photos: uploadedPhotoUrls,
         })
@@ -1168,19 +1205,45 @@ return (
       setCreatedSurpriseId(data.id.toString());
 
       // Use permanent Supabase URLs for the creator preview too
+      memoryPhotos.forEach((photo) => {
+        if (photo.startsWith("blob:")) revokeObjectUrl(photo);
+      });
       setMemoryPhotos(uploadedPhotoUrls);
+      if (selectedSongFile) {
+        if (audioUrl) revokeObjectUrl(audioUrl);
+        setAudioUrl("");
+        setSelectedSongFile(null);
+        setSelectedSong(savedSong);
+      }
 
       // Saving is complete
       setIsSavingSurprise(false);
     } catch (error) {
       console.error("Create surprise error:", error);
 
+      if (uploadedStoragePaths.length > 0) {
+        try {
+          const { error: cleanupError } = await supabase.storage
+            .from("memories")
+            .remove(uploadedStoragePaths);
+          if (cleanupError) {
+            console.error("Failed to clean up uploaded files:", cleanupError);
+          }
+        } catch (cleanupError) {
+          console.error("Failed to clean up uploaded files:", cleanupError);
+        }
+      }
+
       setIsSavingSurprise(false);
       setShowCakeBuild(false);
 
-      alert(
-        "Something went wrong while creating your surprise. Please try again ❤️"
-      );
+      const details =
+        error instanceof Error
+          ? error.message
+          : typeof error === "object" && error !== null && "message" in error
+            ? String(error.message)
+            : "Unknown save error";
+      alert(`Something went wrong while creating your surprise: ${details} ❤️`);
     }
   }}
   className="mx-auto mt-6 block w-2/3 rounded-2xl bg-gradient-to-r from-[#ff6f70] to-[#ff9b58] px-4 py-4 text-center font-bold text-white shadow-lg transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
@@ -1215,7 +1278,7 @@ return (
         <div className="text-5xl">🎂</div>
 
         <h2 className="mt-5 text-2xl font-black text-[#4b3030]">
-          Crafting {name || "your"}'s surprise...
+          Crafting {name || "your"}&apos;s surprise...
         </h2>
 
         <p className="mt-2 text-sm text-[#9b7777]">
@@ -1305,6 +1368,12 @@ return (
         Your birthday surprise has been created.
         Share this link with someone special.
       </p>
+
+      {createWarning && (
+        <p className="mt-3 text-sm leading-5 text-amber-200">
+          {createWarning}
+        </p>
+      )}
 
       <div className="mt-6 rounded-2xl border border-white/10 bg-black/20 p-3">
         <p className="break-all text-xs leading-5 text-white/70">

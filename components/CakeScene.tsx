@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type Props = {
   cake: string;
@@ -178,22 +178,17 @@ function VanillaCake({ age }: { age: string }) {
 }
 
 export default function CakeScene({ cake, name, age, onComplete }: Props) {
-  const [mounted, setMounted] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const musicRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const music = musicRef.current;
 
     return () => {
-      setMounted(false);
-
       // Stop the Happy Birthday song when this Cake Scene closes.
-      if (musicRef.current) {
-        musicRef.current.pause();
-        musicRef.current.currentTime = 0;
-      }
+      music?.pause();
+      if (music) music.currentTime = 0;
 
       // Close the Web Audio context used for the small boom effects.
       if (audioRef.current) {
@@ -206,7 +201,7 @@ export default function CakeScene({ cake, name, age, onComplete }: Props) {
   const selected = (cakeInfo[cake as CakeKey] ? cake : "strawberry") as CakeKey;
   const c = cakeInfo[selected];
 
-  const boomSound = () => {
+  const boomSound = useCallback(() => {
     try {
       const AC =
         window.AudioContext ||
@@ -237,9 +232,9 @@ export default function CakeScene({ cake, name, age, onComplete }: Props) {
       osc.start();
       osc.stop(ctx.currentTime + 0.25);
     } catch {}
-  };
+  }, []);
 
-  const startAudio = () => {
+  const startAudio = useCallback(() => {
     // Start the Happy Birthday song without showing a music button.
     const music = musicRef.current;
     if (music) {
@@ -264,12 +259,12 @@ export default function CakeScene({ cake, name, age, onComplete }: Props) {
 
     setSoundEnabled(true);
     window.setTimeout(boomSound, 80);
-  };
+  }, [boomSound]);
 
   useEffect(() => {
     // Try immediately. If the browser blocks autoplay, the first tap/click
     // anywhere on the Cake Scene starts both music and boom sound.
-    startAudio();
+    const startTimer = window.setTimeout(startAudio, 0);
 
     const unlock = () => {
       startAudio();
@@ -281,10 +276,11 @@ export default function CakeScene({ cake, name, age, onComplete }: Props) {
     window.addEventListener("keydown", unlock, { once: true });
 
     return () => {
+      window.clearTimeout(startTimer);
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("keydown", unlock);
     };
-  }, []);
+  }, [startAudio]);
 
   useEffect(() => {
     if (!soundEnabled) return;
@@ -307,7 +303,7 @@ export default function CakeScene({ cake, name, age, onComplete }: Props) {
       intervals.forEach((id) => window.clearInterval(id));
       timeouts.forEach((id) => window.clearTimeout(id));
     };
-  }, [soundEnabled]);
+  }, [soundEnabled, boomSound]);
 
   return (
     <div

@@ -3,6 +3,8 @@
 
 import { useEffect, useState } from "react";
 
+const floatingHearts = Array.from({ length: 22 }, (_, i) => i);
+
 type Props = {
   name: string;
   senderName: string;
@@ -17,11 +19,8 @@ export default function FinalSurpriseScene({
   birthday,
 }: Props) {
   const [show, setShow] = useState(false);
-  const [hearts, setHearts] = useState<number[]>([]);
-
   useEffect(() => {
     const timer = window.setTimeout(() => setShow(true), 250);
-    setHearts(Array.from({ length: 22 }, (_, i) => i));
     return () => window.clearTimeout(timer);
   }, []);
 
@@ -36,7 +35,7 @@ export default function FinalSurpriseScene({
       </div>
 
       <div className="floating-hearts" aria-hidden="true">
-        {hearts.map((i) => (
+        {floatingHearts.map((i) => (
           <span key={i} style={{ "--i": i } as React.CSSProperties}>
             {i % 3 === 0 ? "♡" : "♥"}
           </span>

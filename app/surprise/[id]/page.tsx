@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -36,6 +36,7 @@ export default function SurprisePage() {
   const [surprise, setSurprise] = useState<Surprise | null>(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [showArchery, setShowArchery] = useState(true);
   const [showBirthdayTree, setShowBirthdayTree] = useState(false);
@@ -45,12 +46,18 @@ export default function SurprisePage() {
   const [showFinalScene, setShowFinalScene] = useState(false);
 
 const startSelectedSong = async () => {
-  const src = musicFiles[surprise?.selected_song || ""];
+  const selectedSong = surprise?.selected_song || "";
+  const src =
+    musicFiles[selectedSong] ||
+    (/^https?:\/\//i.test(selectedSong) ? selectedSong : "");
 
   if (!src) return;
 
+  audioRef.current?.pause();
+  if (audioRef.current) audioRef.current.currentTime = 0;
   const audio = new Audio(src);
   audio.loop = true;
+  audioRef.current = audio;
 
   try {
     await audio.play();
@@ -58,6 +65,13 @@ const startSelectedSong = async () => {
     console.error("Music playback error:", error);
   }
 };
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
 
 
   useEffect(() => {

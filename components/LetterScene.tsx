@@ -34,8 +34,6 @@ export default function LetterScene({
   useEffect(() => {
     if (!opened) return;
 
-    setTypedText("");
-
     let index = 0;
     const timer = window.setInterval(() => {
       index += 1;
